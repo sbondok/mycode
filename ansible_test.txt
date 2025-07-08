@@ -1,0 +1,111 @@
+Lab Objective
+In this lab, you'll learn how to create and use Ansible inventories. We'll explore how to use INI and YAML formats, run Ansible commands, and configure Ansible's behavior using .ansible.cfg. Inventories are the foundation of using Ansible effectively, so this is an essential skill!
+
+Procedure
+Run the following command to set up your hosts:
+
+sudo apt install -y ansible
+
+vim test_inventory.ini
+[planetexpress]
+worker1     ansible_host=192.168.0.135  ansible_user=sbond ansible_python_interpreter=/usr/bin/python3 ansible_ssh_pass=ep****** fileuser=sbond
+worker2     ansible_host=192.168.0.163  ansible_user=sbond ansible_python_interpreter=/usr/bin/python3 ansible_ssh_pass=ep****** fileuser=sbond
+control2    ansible_host=192.168.0.102  ansible_user=sbond ansible_python_interpreter=/usr/bin/python3 fileuser=sbond
+control3    ansible_host=192.168.0.141  ansible_user=sbond ansible_python_interpreter=/usr/bin/python3 fileuser=sbond
+
+sudo apt install -y sshpass  # it is needed for connection with worker1 and 2 -
+
+vim ~/.ansible.cfg
+[defaults]
+inventory = /home/sbond/test_inventory.ini
+
+ansible worker1 -m ping
+
+Breaking it down:
+
+ansible worker1: This tells Ansible to target the host named worker1.
+-m ping: The -m flag specifies the module to use. Here, ping is used to check connectivity.
+
+
+For Ansible to communicate with these hosts, it needs an "address book" of sorts... a host inventory! This inventory file contains all the information Ansible needs to SSH into a host and configure it. Inventories come in different formats, but let’s start with the INI format.
+
+
+$ ansible worker1 -m ping -i ~/test_inventory.ini
+
+Success! You should see a response confirming that fry is reachable.
+
+$ ansible planetexpress -m ping -i ~/test_inventory.ini
+
+If you ever run into issues with your inventory file, you can use the ansible-inventory command to check its contents. Let’s try a few examples:
+
+List the full inventory:
+
+$ ansible-inventory -i ~/test_inventory.ini --list
+
+This will display a JSON representation of the inventory file.
+
+Show the inventory structure as a graph:
+
+$ ansible-inventory -i ~/test_inventory.ini --graph
+
+This shows the relationships between groups and hosts.
+
+Get details about a specific host:
+
+$ ansible-inventory -i ~/test_inventory.ini --host control2
+
+This provides a detailed view of all the variables associated with the host control2.
+
+Adding -i ~/test_inventory.ini to every command can get tedious. You can set a default inventory by editing your .ansible.cfg file.
+
+$ vim ~/.ansible.cfg
+
+Add the following lines:
+
+[defaults]
+inventory = /home/student/test_inventory.ini
+
+
+Now, you can run commands without specifying the inventory file! Try this command again, it should work thanks to the .ansible.cfg file.
+
+$ ansible planetexpress -m ping
+
+We'll be using the ini format inventory for most of our labs-- it's less error prone for lab work and is easily editable. But you're not restricted to just this file type! Let's make a YAML format inventory.
+
+$ vim ~/test_inventory.yaml
+
+Add the following content:
+
+all:
+  children:
+    planetexpress:
+      hosts:
+        worker1:
+          ansible_host: 192.168.0.135
+          ansible_user: sbond
+          ansible_ssh_pass: ep****         
+          ansible_python_interpreter: /usr/bin/python3
+          fileuser: sbond
+        control2:
+          ansible_host: 192.168.0.102
+          ansible_user: sbond
+          fileuser: sbond
+
+Since the default inventory is still test_inventory.ini, you’ll need to explicitly specify the new YAML inventory file with the -i flag:
+
+$ ansible planetexpress -m ping -i ~/test_inventory.yaml
+
+Success! If you've made it this far you've created two inventories of different file types and instructed Ansible to use them. Now test what you've learned with the challenges below!
+
+Summary
+In this lab, you learned how to:
+
+Use INI and YAML formats to create Ansible inventories.
+Use ad-hoc commands to target specific hosts or groups.
+Configure Ansible's default behavior using .ansible.cfg.
+Debug inventory issues using ansible-inventory.
+
+
+
+
+

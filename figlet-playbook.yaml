@@ -1,0 +1,22 @@
+---
+- name: Install and run figlet on worker2 (Ubuntu)
+  hosts: worker2
+  become: yes  # Use sudo for tasks requiring elevated privileges
+  tasks:
+    - name: Update the apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Ensure figlet is installed
+      ansible.builtin.apt:
+        name: figlet
+        state: present
+
+    - name: Run figlet with a test message
+      ansible.builtin.command:
+        cmd: figlet "Hello from worker2!"
+      register: figlet_output
+
+    - name: Display figlet output
+      ansible.builtin.debug:
+        var: figlet_output.stdout
