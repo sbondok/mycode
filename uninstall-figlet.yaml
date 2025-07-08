@@ -1,0 +1,9 @@
+---
+- name: Uninstall figlet on worker2
+  hosts: worker2
+  become: yes  # Use sudo for elevated privileges
+  tasks:
+    - name: Ensure figlet is removed
+      ansible.builtin.apt:
+        name: figlet
+        state: absent
